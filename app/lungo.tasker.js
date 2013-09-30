@@ -31,6 +31,20 @@
       });
     };
 
+    Task.normal = function() {
+      return this.select(function(task) {
+        return task.important === false;
+      });
+    };
+
+    Task.prototype.style = function() {
+      if (this.done) {
+        return "accept";
+      } else {
+        return "cancel";
+      }
+    };
+
     return Task;
 
   })(Monocle.Model);
@@ -45,7 +59,7 @@
   __View.Task = (function(_super) {
     __extends(Task, _super);
 
-    Task.prototype.template = "<li class=\"{{done}}\">\n  <div class=\"on-right\">{{list}}</div>\n  <strong>{{name}}</strong>\n  <small>{{description}}</small>\n</li>";
+    Task.prototype.template = "<li class=\"{{style()}}\">\n  <div class=\"on-right\">{{list}}</div>\n  <strong>{{name}}</strong>\n  <small>{{description}}</small>\n</li>";
 
     function Task() {
       this.bindTaskUpdated = __bind(this.bindTaskUpdated, this);
@@ -65,14 +79,35 @@
     };
 
     Task.prototype.onDone = function(event) {
-      this.event.updateAttributes({
-        "class": "icon accept"
+      this.model.updateAttributes({
+        done: !this.model.done
       });
       return this.refresh();
     };
 
     Task.prototype.onDelete = function(event) {
-      return this.remove();
+      var _this = this;
+      return Lungo.Notification.confirm({
+        icon: "remove-sign",
+        title: "",
+        description: "Do you really want to remove this task?",
+        accept: {
+          icon: "checkmark",
+          label: "Yes",
+          callback: function() {
+            _this.model.destroy();
+            _this.remove();
+            return _this.refresh();
+          }
+        },
+        cancel: {
+          icon: "close",
+          label: "No",
+          callback: function() {
+            return console.log("Error on onDelete");
+          }
+        }
+      });
     };
 
     Task.prototype.onView = function(event) {
@@ -105,8 +140,7 @@
       "textarea[name=description]": "description",
       "input[name=list]": "list",
       "select[name=when]": "when",
-      "input[name=important]": "important",
-      "li#class": "done"
+      "input[name=important]": "important"
     };
 
     TaskCtrl.prototype.events = {
@@ -127,17 +161,17 @@
         this.current.when = this.when.val();
         this.current.important = this.important.val();
         this.current.save();
-        return Lungo.Notification.html("¡Tarea " + this.name.val() + " modificada!");
+        return Lungo.Notification.html("Task " + this.name.val() + " changed!");
       } else {
         __Model.Task.create({
           name: this.name.val(),
           description: this.description.val(),
-          list: this.list.val(),
-          when: this.when.val(),
+          list: "",
+          when: "",
           important: this.important[0].checked,
-          done: this.done.val()
+          done: "accept"
         });
-        return Lungo.Notification.html("¡Tarea " + this.name.val() + " creada!");
+        return Lungo.Notification.html("Task " + this.name.val() + " created!");
       }
     };
 
@@ -145,10 +179,8 @@
       this.current = current != null ? current : null;
       this.name.val("");
       this.description.val("");
-      this.list.val("clean");
+      this.list.val("");
       this.when.val("");
-      this.important.val("checked");
-      this.done.val("icon accept");
       return Lungo.Router.section("task");
     };
 
@@ -195,6 +227,7 @@
       TasksCtrl.__super__.constructor.apply(this, arguments);
       __Model.Task.bind("create", this.bindTaskCreated);
       __Model.Task.bind("update", this.bindTaskUpdated);
+      __Model.Task.bind("destroy", this.updateCounters);
     }
 
     TasksCtrl.prototype.onNew = function(event) {
@@ -209,16 +242,25 @@
         container: "article#" + context + " ul"
       });
       Lungo.Router.back();
-      return setTimeout((function() {
+      setTimeout((function() {
         return Lungo.Notification.hide();
-      }), 2000);
+      }), 1500);
+      return this.updateCounters();
     };
 
     TasksCtrl.prototype.bindTaskUpdated = function(task) {
       Lungo.Router.back();
-      return setTimeout((function() {
+      setTimeout((function() {
         return Lungo.Notification.hide();
-      }), 2000);
+      }), 1500);
+      return this.updateCounters();
+    };
+
+    TasksCtrl.prototype.updateCounters = function() {
+      Lungo.Element.count("#important", __Model.Task.important().length);
+      Lungo.Element.count("#importantnav", __Model.Task.important().length);
+      Lungo.Element.count("#normal", __Model.Task.normal().length);
+      return Lungo.Element.count("#pending", __Model.Task.normal().length);
     };
 
     return TasksCtrl;

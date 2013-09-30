@@ -1,5 +1,5 @@
 {
-    "name"          : "lungo.tasker",
+    "name"          : "Lungo.tasker",
     "dependencies"  : {},
     "devDependencies"   : {
         "grunt-contrib-coffee"  : "*",

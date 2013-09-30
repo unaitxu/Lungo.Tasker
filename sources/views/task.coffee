@@ -1,13 +1,13 @@
 class __View.Task extends Monocle.View
 
   template  : """
-    <li class="{{done}}">
+    <li class="{{style()}}">
       <div class="on-right">{{list}}</div>
       <strong>{{name}}</strong>
       <small>{{description}}</small>
     </li>
   """
-
+  
   constructor: ->
     super
     __Model.Task.bind "update", @bindTaskUpdated
@@ -22,11 +22,27 @@ class __View.Task extends Monocle.View
     "input.toggle"  : "toggle"
 
   onDone: (event) ->
-    @event.updateAttributes class: "icon accept"
+    @model.updateAttributes done: !@model.done
     @refresh()
 
   onDelete: (event) ->
-    @remove()
+    Lungo.Notification.confirm
+      icon: "remove-sign"
+      title: ""
+      description: "Do you really want to remove this task?"
+      accept:
+        icon: "checkmark"
+        label: "Yes"
+        callback: =>
+          @model.destroy()
+          @remove() 
+          @refresh()
+      cancel:
+        icon: "close"
+        label: "No"
+        callback: ->
+          console.log "Error on onDelete"
+
 
   onView: (event) ->
     __Controller.Task.show @model

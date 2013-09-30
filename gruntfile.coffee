@@ -11,9 +11,14 @@ module.exports = (grunt) ->
         "sources/views/*.coffee",
         "sources/controllers/*.coffee"]
 
-    coffee:
-      app  : files: "app/<%=pkg.name%>.js": "<%= sources %>"
+    components: [
+      "components/quojs/quo.js",
+      "components/monocle/monocle.js",
+      "components/lungo/lungo.js"
+    ]
 
+    coffee:
+      app  : files: "app/<%=pkg.name%>.js" : "<%= sources %>"
 
     watch:
       coffee:

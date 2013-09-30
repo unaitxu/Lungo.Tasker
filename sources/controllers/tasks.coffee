@@ -11,6 +11,7 @@ class __Controller.TasksCtrl extends Monocle.Controller
       super
       __Model.Task.bind "create", @bindTaskCreated
       __Model.Task.bind "update", @bindTaskUpdated
+      __Model.Task.bind "destroy", @updateCounters
 
     onNew: (event) ->
       __Controller.Task.new()
@@ -21,13 +22,21 @@ class __Controller.TasksCtrl extends Monocle.Controller
       Lungo.Router.back()
       setTimeout (->
         Lungo.Notification.hide()
-      ), 2000
+      ), 1500
+      @updateCounters()
 
     bindTaskUpdated: (task) =>
       Lungo.Router.back()
       setTimeout (->
         Lungo.Notification.hide()
-      ), 2000
+      ), 1500
+      @updateCounters()
+
+    updateCounters: ->
+      Lungo.Element.count("#important", __Model.Task.important().length);
+      Lungo.Element.count("#importantnav", __Model.Task.important().length);
+      Lungo.Element.count("#normal", __Model.Task.normal().length);
+      Lungo.Element.count("#pending", __Model.Task.normal().length);
 
 $$ ->
   Lungo.init({})

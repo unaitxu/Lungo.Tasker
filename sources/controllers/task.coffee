@@ -6,7 +6,6 @@ class TaskCtrl extends Monocle.Controller
     "input[name=list]"          : "list"
     "select[name=when]"         : "when"
     "input[name=important]"     : "important"
-    "li#class"                  : "done"
 
   events:
     "click [data-action=save]"  : "onSave"
@@ -25,25 +24,23 @@ class TaskCtrl extends Monocle.Controller
       @current.when = @when.val()
       @current.important = @important.val()
       @current.save()
-      Lungo.Notification.html("¡Tarea "+@name.val()+" modificada!")
+      Lungo.Notification.html("Task "+@name.val()+" changed!")
 
     else
       __Model.Task.create
         name        : @name.val()
         description : @description.val()
-        list        : @list.val()
-        when        : @when.val()
+        list        : ""
+        when        : ""
         important   : @important[0].checked
-        done        : @done.val()
-      Lungo.Notification.html("¡Tarea "+@name.val()+" creada!")
+        done        : "accept"
+      Lungo.Notification.html("Task "+@name.val()+" created!")
 
   _new: (@current=null) ->
     @name.val ""
     @description.val ""
-    @list.val "clean"
+    @list.val ""
     @when.val ""
-    @important.val "checked"
-    @done.val "icon accept"
     Lungo.Router.section "task"
 
   _show: (@current) ->
